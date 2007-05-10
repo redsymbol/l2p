@@ -225,14 +225,20 @@ workaround is to give a background color hint with the B<-b> option;
 the edge pixels will then be a mixture of specified foreground and
 background colors.
 
-=head1 AUTHOR
+=head1 ACKS
 
-Aaron Maxwell (amax@redsymbol.net).  Comments, feature requests, and
-patches are welcome.
+Thanks to Jesse Merriman (L<http://www.jessemerriman.com/>) for
+providing a patch that improved transparent background support.
+Integrated in version 1.1.
 
 =head1 COPYRIGHT
 
 This software is in the public domain.
+
+=head1 AUTHOR
+
+Aaron Maxwell (amax@redsymbol.net).  Comments, feature requests, and
+patches are welcome.
 
 =cut
 

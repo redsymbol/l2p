@@ -1,8 +1,14 @@
 #!/bin/sh
-ROOT=/home/amax/0PROJECTS/l2p
+ROOT=.
 FILES='l2p.html l2p.txt l2p'
-BASENAME='l2p-1.0'
+BASENAME=l2p-`./l2p -V`
 cd $ROOT
+
+# set up directories
+rm -rf dist
+mkdir dist
+rm -rf doc
+mkdir doc
 
 # generate files
 pod2html --infile=l2p --outfile=doc/l2p.html
