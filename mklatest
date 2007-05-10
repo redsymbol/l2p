@@ -1,0 +1,52 @@
+#!/bin/sh
+ROOT=/home/amax/0PROJECTS/l2p
+FILES='l2p.html l2p.txt l2p'
+BASENAME='l2p-1.0'
+cd $ROOT
+
+# generate files
+pod2html --infile=l2p --outfile=doc/l2p.html
+rm -f pod2htm*.tmp
+pod2text l2p doc/l2p.txt
+
+# prepare to make balls
+cd dist
+if [ -d ${BASENAME} ]; then
+	cd ${BASENAME}
+	rm -f $FILES
+	cd ..
+else
+	mkdir ${BASENAME}
+fi
+cp ../doc/l2p.html ../doc/l2p.txt ../l2p ${BASENAME}/
+
+# make balls
+# heh
+rm -f l2p*.tbz2
+tar jcf ${BASENAME}.tbz2 ${BASENAME}
+ln -s ${BASENAME}.tbz2 l2p-latest.tbz2
+
+rm -f l2p*.tgz
+tar zcf ${BASENAME}.tgz ${BASENAME}
+ln -s ${BASENAME}.tgz l2p-latest.tgz
+
+rm -f l2p*.zip
+zip -q ${BASENAME}.zip ${BASENAME}/l2p.html ${BASENAME}/l2p.txt ${BASENAME}/l2p
+ln -s ${BASENAME}.zip l2p-latest.zip
+
+# bring in other files
+rm -f l2p
+cp ../l2p .
+rm -f l2p-doc.html
+cp ../doc/l2p.html l2p-doc.html
+
+# clean up
+cd ${BASENAME}
+rm -f $FILES
+cd ..
+rmdir ${BASENAME}
+
+# make dist ball for convenient uploading
+cd ..
+rm -f dist.tbz2
+tar jcf dist.tbz2 dist

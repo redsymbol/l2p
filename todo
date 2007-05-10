@@ -1,0 +1,23 @@
+check that border feature works, with differnent color opts and geom;
+incl. transparency; also write docs for it
+
+x - Do I want to make wrapping $ around the arugument to -i optional?
+-  -I option, which is like -i, but puts $'s around the expression for you
+- remove debug info
+- let -p argument be encased in quotes, and separated by spaces & comments
+- example using -B option
+- make -F deal with multipage docs.  You can implement the workaround
+  in the docs
+- option to specify arbitrary imagemagick options
+- detect latex errors by checking return value of latex executable
+- multiple -i arguments? 
+x - documentation on wrapping option arguments in quotes
+x + allow an optional # prefix to hex triplets
+x - in COLORS section of docs, make note that they may need to put the color
+  in quotes
+x + add option to install a (transparent?) border
+- document error codes
+- support for job spec (XML file?)
+x - put a version in a variable, and have it incorporated in the
+  perldoc somehow? 
+x - recognize 3-char color codes (e.g. F00 for red)

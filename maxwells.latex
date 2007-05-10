@@ -1,0 +1,9 @@
+# Example input file - Maxwell's Equations
+ # Comments are lines whose first character is an '#'.
+  # Blank lines and leading whitespace are ignored.
+   # Lines should otherwise start and end with an '$'.
+
+$\nabla \cdot \mathbf{D} = \rho$
+	$\nabla \times \mathbf{H} = J$
+$\nabla \times \mathbf{E} + \frac{\partial \mathbf{B}}{\partial t} = 0$
+	$\nabla \cdot \mathbf{B} = 0$
