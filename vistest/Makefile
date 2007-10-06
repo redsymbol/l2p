@@ -37,3 +37,5 @@ all:
 	$(L2P) -o test_borderwithdiffbackgroundanother.png -b ffff00 -B '50 1.0 0.0 0.0' i.tex
 	# border w/ transparency
 	$(L2P) -o test_borderwithtransparency.png -T -B '50' i.tex
+	# multiple items
+	cat j.tex | $(L2P) -o test_multi.png
