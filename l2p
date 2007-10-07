@@ -448,28 +448,28 @@ EOT
 # discover the LaTeX expression to render
 $eqn='';
 if (defined $opt_i) {
-        # expression from command line
-	$eqn =  $opt_i . "\n";
+    # expression from command line
+    $eqn =  $opt_i . "\n";
 } elsif (not $opt_F) {
-	# file/stdin contains LaTeX expression(s)
-        # TODO: rewrite using an expression iterator subroutine
-	while(<>) {
-		next if /^\s*#/ or /^\s*$/;
-		chomp; 
-		$eqn .= $_ . "\n";
-                # If this is line contains a single inline expression, add
-                # an extra newline, so that it renders correctly
-                if (/^\s*\$.*\$\s*$/) {
-                    $eqn .= "\n";
-                }
-	}
+    # file/stdin contains LaTeX expression(s)
+    # TODO: rewrite using an expression iterator subroutine
+    while(<>) {
+        next if /^\s*#/ or /^\s*$/;
+            chomp; 
+        $eqn .= $_ . "\n";
+        # If this is line contains a single inline expression, add
+        # an extra newline, so that it renders correctly
+        if (/^\s*\$.*\$\s*$/) {
+            $eqn .= "\n";
+        }
+}
 }
 if (not $opt_F and $eqn =~ /^\s*$/) {
-	print STDERR <<'EOT';
+    print STDERR <<'EOT';
 Did not find a LaTeX expression to render.  Perhaps the supplied
 expression or file is empty, or does not exist.
 EOT
-	exit(3);
+    exit(3);
 }
 
 # create a temporary latex file to use
@@ -478,23 +478,23 @@ my $tempdir = tempdir(CLEANUP=> $opt_C ? 0 : 1)
 print "Temporary files stored in $tempdir\n" if $opt_C;
 my $latexfn = $tempdir . "/foo.latex";
 if($opt_F) {
-	$source = shift @ARGV;
-	if(not -e $source) {
-		die "LaTeX source ($source) does not exist!";
-	} elsif (not -r $source) {
-		die "Cannot read file $source.";
-	}
-	if(substr($source,0,1) ne '/') {
-		my $cwd = `pwd`; chomp $cwd;
-		$source = $cwd . '/' . $source;
-	}
-	system("ln -s $source $latexfn");
-	-e "$latexfn" or die "Unable to create link to source file ($source)";
+    $source = shift @ARGV;
+    if(not -e $source) {
+        die "LaTeX source ($source) does not exist!";
+    } elsif (not -r $source) {
+        die "Cannot read file $source.";
+    }
+    if(substr($source,0,1) ne '/') {
+        my $cwd = `pwd`; chomp $cwd;
+        $source = $cwd . '/' . $source;
+    }
+    system("ln -s $source $latexfn");
+    -e "$latexfn" or die "Unable to create link to source file ($source)";
 } else {
-        my $latexfh;
-	open($latexfh,">",$latexfn) or die "could not write to latex temp file";
-	print $latexfh $pre, $eqn, $post;
-	close($latexfh);
+    my $latexfh;
+    open($latexfh,">",$latexfn) or die "could not write to latex temp file";
+    print $latexfh $pre, $eqn, $post;
+    close($latexfh);
 }
 
 # produce dvi output
