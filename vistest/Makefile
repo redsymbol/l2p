@@ -1,6 +1,8 @@
 L2P = ../l2p
 
 all:
+	# multi-line bug
+	$(L2P) -o test_multilinebug.png -p pstricks k.tex
 	# use included package
 	$(L2P) -o test_includepackage.png -p amssymb -i "$$\mho$$"
 	# Normal

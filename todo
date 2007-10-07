@@ -1,6 +1,9 @@
 check that border feature works, with differnent color opts and geom;
 incl. transparency; also write docs for it
 
+- Make a read_expression() sub that acts as an expression iterator in
+reading, to abstract out the parsing options ($$-expr
+vs. \begin{}-\end{}, etc).  Include tests for it, of course.
 x - Do I want to make wrapping $ around the arugument to -i optional?
 -  -I option, which is like -i, but puts $'s around the expression for you
 - remove debug info

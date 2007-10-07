@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # L2P - Convert LaTeX expressions to PNG
 
-$version = '1.1';
+$version = '1.1.1';
 
 =head1 NAME
 
@@ -451,11 +451,17 @@ if (defined $opt_i) {
         # expression from command line
 	$eqn =  $opt_i . "\n";
 } elsif (not $opt_F) {
-	# file/stdin contains LaTeX expression
+	# file/stdin contains LaTeX expression(s)
+        # TODO: rewrite using an expression iterator subroutine
 	while(<>) {
 		next if /^\s*#/ or /^\s*$/;
 		chomp; 
-		$eqn .= $_ . "\n\n";
+		$eqn .= $_ . "\n";
+                # If this is line contains a single inline expression, add
+                # an extra newline, so that it renders correctly
+                if (/^\s*\$.*\$\s*$/) {
+                    $eqn .= "\n";
+                }
 	}
 }
 if (not $opt_F and $eqn =~ /^\s*$/) {
