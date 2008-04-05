@@ -1,0 +1,41 @@
+L2P - Create pictures from LaTeX math expressions
+
+L2P is a command-line tool to create PNG images of math expressions,
+formatted in the LaTeX typesetting language.  While it can convert a
+whole document, it is designed to easily generate images from just a
+fragment of LaTeX code, without you needing to build a separate LaTeX
+markup file.  A large set of options provide great control and finesse
+over the resulting image.
+
+EXAMPLES
+
+l2p -i '$4x^2-7=\cos{2 \pi x}$' -o eqn4.png
+
+Produce a PNG image, named 'eqn4.png', of the equation described by the
+LaTeX expression '$4x^2 - 7 = \cos{2 \pi x}$'.
+
+
+l2p -d 250 -i '$\nabla \cdot \mathbf{D} = \rho$' 
+
+Produce a PNG image from the LaTeX code given with the -i argument
+(which happens to be one of Maxwell's equations), at 250 dots per inch.
+Since we did not specify an output file name with the -o option, the
+image will be 'eqn.png' (the default).  
+
+
+l2p -p amssymb -i '$\mho$' -o mho.png
+
+Produce a PNG image of the Mho symbol (an upside-down capital omega),
+saving the image in the file 'mho.png'.  We include the amssymb package,
+which defines that symbol.
+
+
+l2p -B 20x30 -i '$\sum_{n=0}^{\infty}\frac{(-\phi^2)^n}{(2n)!}$' -o cosine.png
+
+Produce an image of the indicated infinite summation, padded with a
+border that is 20 pixels on each side horizontally, and 30 pixels each
+side vertically.  The color of this border region will be the same as
+the rest of the image background.
+
+Homepage: http://redsymbol.net/software/l2p/
+Public source repository: http://github.com/redsymbol/l2p/tree/master
