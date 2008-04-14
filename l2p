@@ -328,19 +328,23 @@ our($opt_o, # output file name
     );
 
 # check to see if needed software is available
-my($latex,$dvips,$convert);
-$latex = `which latex`; chomp $latex;
-if($latex eq '' or not -X $latex) {
+my %cmds = (
+    'latex'   => '',
+    'dvips'   => '',
+    'convert' => '',
+    );
+$cmds{'latex'} = `which latex`; chomp $cmds{'latex'};
+if($cmds{'latex'} eq '' or not -X $cmds{'latex'}) {
 	print STDERR "Cannot find latex executable.  Aborting.\n";
 	exit(2);
 }
-$dvips = `which dvips`; chomp $dvips;
-if($dvips eq '' or not -X $dvips) {
+$cmds{'dvips'} = `which dvips`; chomp $cmds{'dvips'};
+if($cmds{'dvips'} eq '' or not -X $cmds{'dvips'}) {
 	print STDERR "Cannot find dvips executable.  Aborting.\n";
 	exit(2);
 }
-$convert = `which convert`; chomp $convert;
-if($convert eq '' or not -X $convert) {
+$cmds{'convert'} = `which convert`; chomp $cmds{'convert'};
+if($cmds{'convert'} eq '' or not -X $cmds{'convert'}) {
 	print STDERR "Cannot find convert executable.  Aborting.\n";
 	exit(2);
 }
@@ -498,7 +502,7 @@ if($opt_F) {
 }
 
 # produce dvi output
-system("cd $tempdir; $latex -interaction=batchmode $latexfn >/dev/null");
+system("cd $tempdir; $cmds{'latex'} -interaction=batchmode $latexfn >/dev/null");
 unless (-e "${tempdir}/foo.dvi") {
 	print STDERR <<'EOT';
 latex run failed.  Perhaps the input is invalid, or a specified 
@@ -509,7 +513,7 @@ EOT
 
 # convert dvi to ps
 # the -E option prevents convert from freaking out later
-my $dvipscmd = "$dvips " . ($opt_F ? "": "-E") . " foo -o 2>/dev/null";
+my $dvipscmd = "$cmds{'dvips'} " . ($opt_F ? "": "-E") . " foo -o 2>/dev/null";
 system("cd $tempdir; $dvipscmd");
 unless (-e "${tempdir}/foo.ps") {
 	print STDERR <<'EOT';
@@ -560,7 +564,7 @@ if($opt_B) {
     $color = '#' . norm2hex($color);
     unshift @cargs, ('-border', $geom, '-bordercolor', $color);
 }
-unshift @cargs, ("$convert");
+unshift @cargs, ("$cmds{'convert'}");
 push @cargs, (
     "${tempdir}/foo.ps",
     "${tempdir}/foo.png",

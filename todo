@@ -1,8 +1,7 @@
-- add an equivalent to latex2png's -H option
 -I option, which is like -i, but puts $'s around the expression for you
 - remove debug info
+- add an equivalent to latex2png's -H option
 - let -p argument be encased in quotes, and separated by spaces & comments
-- example using -B option
 - make -F deal with multipage docs.  You can implement the workaround
   in the docs
 - option to specify arbitrary imagemagick options
