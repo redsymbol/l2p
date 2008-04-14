@@ -1,4 +1,5 @@
--  -I option, which is like -i, but puts $'s around the expression for you
+- add an equivalent to latex2png's -H option
+-I option, which is like -i, but puts $'s around the expression for you
 - remove debug info
 - let -p argument be encased in quotes, and separated by spaces & comments
 - example using -B option

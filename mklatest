@@ -51,8 +51,9 @@ cd ${BASENAME}
 rm -f $FILES
 cd ..
 rmdir ${BASENAME}
-
-# make dist ball for convenient uploading
 cd ..
 rm -f dist.tbz2
+rm -rf doc
+
+# make dist ball for convenient uploading
 tar jcf dist.tbz2 dist
