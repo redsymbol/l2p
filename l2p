@@ -9,15 +9,16 @@ l2p - create PNG images from LaTeX expressions
 
 =head1 SYNOPSIS
 
-B<l2p> [options...] -i '$I<latex_expression>$'
+B<l2p> [options...] -I 'I<latex math expression>'
 
 or
 
 B<l2p> [options...] [I<expression_file>]
 
 I<expression_file> contains an expression or expressions in (La)TeX
-format - one per line.  If neither I<expression_file> nor an 
-B<-i> option is given, the expression is read from standard input.
+format - one per line.  If neither I<expression_file>, nor the B<-I>
+or B<-i> options are given, the expression is read from standard
+input.
 
 =head1 DESCRIPTION
 
@@ -29,10 +30,19 @@ Convert expressions in LaTeX format into PNGs
 
 =item
 
-l2p -i '$4x^2-7=\cos{2 \pi x}$' -o 'eqn4.png'
+l2p -I '4x^2-7=\cos{2 \pi x}' -o 'eqn4.png'
 
 Produce a PNG image, named 'eqn4.png', of the equation described by the
 LaTeX expression '$4x^2 - 7 = \cos{2 \pi x}$'.
+
+=item
+
+l2p -i '$4x^2-7=\cos{2 \pi x}$' -o 'eqn4.png'
+
+Same as previous, except that the latex code argument is not
+automatically rendered as an equation - we must explicity surround it
+with '$' symbols.  By omitting that, you can also render
+images of non-math or mixed expressions.
 
 =item
 
@@ -45,16 +55,16 @@ B<-F> option for that.
 
 =item
 
-l2p -d 250 -i '$\nabla \cdot \mathbf{D} = \rho$' 
+l2p -d 250 -I '\nabla \cdot \mathbf{D} = \rho'
 
-Produce a PNG image from the LaTeX code given with the B<-i> argument
+Produce a PNG image from the LaTeX code given with the B<-I> argument
 (which happens to be one of Maxwell's equations), at 250 dots per inch.
 Since we did not specify an output file name with the B<-o> option, the
 image will be 'eqn.png' (the default).  
 
 =item
 
-l2p -p amssymb -i '$\mho$' -o mho.png
+l2p -p amssymb -I '\mho' -o mho.png
 
 Produce a PNG image of the Mho symbol (an upside-down capital omega),
 saving the image in the file 'mho.png'.  We include the amssymb package,
@@ -62,7 +72,7 @@ which defines that symbol.
 
 =item
 
-l2p -B 20x30 -i '$\sum_{n=0}^{\infty}\frac{(-\phi^2)^n}{(2n)!}$' -o cosine.png
+l2p -B 20x30 -I '\sum_{n=0}^{\infty}\frac{(-\phi^2)^n}{(2n)!}' -o cosine.png
 
 Produce an image of the indicated infinite summation, padded with a
 border that is 20 pixels on each side horizontally, and 30 pixels each
@@ -82,11 +92,23 @@ quotes.)
 =over
 
 =item
-B<-i "$latex$">
+B<-I "math expression">
 
-Argument is an equation/expression in (La)TeX format.  In most cases,
-you will want to enclose the argument in quotes to protect it from shell
-expansion.
+Argument is an equation/expression in (La)TeX format, interpreted in
+math mode.  In most cases, you will want to enclose the argument in
+quotes to protect it from shell expansion.
+
+=item
+B<-i "latex code">
+
+Argument is a snippet of (La)TeX code.  If it is a math expression, be
+sure to surround it with $ symbols: for example, B<-i> "$x+2$".  In
+most cases, you will want to enclose the argument in quotes to protect
+it from shell expansion.
+
+The only difference between the B<-i> and B<-I> options is that B<-I>
+automatically surrounds its argument with "$" symbols, so that it is
+rendered in LaTeX's math mode.  Otherwise there is no difference.
 
 =item
 B<-b "rrggbb">
@@ -314,7 +336,8 @@ sub norm2hex {
 my($pre,$post,$dpi,$eqn,$outfile,$fg,$bg);
 our($opt_o, # output file name
     $opt_d, # dpi
-    $opt_i, # in-command-line latex expression
+    $opt_i, # in-command-line latex code
+    $opt_I, # in-command-line math expression
     $opt_f, # foreground RGB triplet
     $opt_b, # background RGB triplet
     $opt_F, # set if input is a full LaTeX document
@@ -346,7 +369,7 @@ if(@cmds_notfound) {
 }
 
 # process command line opts
-getopt('odifbpB');
+getopt('odiIfbpB');
 
 if ($opt_V) {
 	print $version, "\n";
@@ -359,14 +382,15 @@ Generate PNG images from LaTeX expressions
 usage: 
     l2p [options] [file_containing_latex_expressions]
 or
-    l2p [options] -i '$LaTeX-expression$'
+    l2p [options] -I 'LaTeX-expression'
 
 Note: Many options will require quotes around their arguments to
 ensure correct interpretation by the shell.
 
 Options:
     -o output.png     Name of output file.  Default is 'eqn.png'.
-    -i '$latex$'      equation/expression in (La)TeX format
+    -I '<latex eqn>'  (La)TeX equation or expression (rendered as math)
+    -i '<latex code>' Raw (La)TeX code (not rendered as math by default)
     -f 'rrggbb'       foreground color
     -b 'rrggbb'       background color
     -d dpi            Conversion resolution (default 300)
@@ -448,8 +472,11 @@ EOT
 # discover the LaTeX expression to render
 $eqn='';
 if (defined $opt_i) {
-    # expression from command line
+    # latex code from command line
     $eqn =  $opt_i . "\n";
+} elsif (defined $opt_I) {
+    # expression from command line
+    $eqn = sprintf("\$%s\$\n",$opt_I);
 } elsif (not $opt_F) {
     # file/stdin contains LaTeX expression(s)
     # TODO: rewrite using an expression iterator subroutine

@@ -1,6 +1,8 @@
 L2P = ../l2p
 
 all:
+	# -I option
+	$(L2P) -o test_Ioption.png -I '\sqrt{\sum^{N}_{i=1}{x_i}}'
 	# multi-line bug
 	$(L2P) -o test_multilinebug.png -p pstricks k.tex
 	# use included package
