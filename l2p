@@ -333,10 +333,23 @@ sub norm2hex {
     return $hex;
 }
 
+# extract_ext - guess an extension (and thus image type) from a file name
+# Returns undef if unable to make a good guess.
+sub extract_ext($) {
+    my $fname = shift;
+    if (-1 == index($fname, '.')) {
+        return undef;
+    }
+    @parts = split(/\./, $fname);
+    return pop @parts;
+}
+
+
 my($pre,$post,$dpi,$eqn,$outfile,$fg,$bg);
 our($opt_o, # output file name
     $opt_d, # dpi
     $opt_i, # in-command-line latex code
+    $opt_x, # file type extension
     $opt_I, # in-command-line math expression
     $opt_f, # foreground RGB triplet
     $opt_b, # background RGB triplet
@@ -369,13 +382,25 @@ if(@cmds_notfound) {
 }
 
 # process command line opts
-getopt('odiIfbpB');
+getopt('odiIfbpBx');
 
 if ($opt_V) {
 	print $version, "\n";
 	exit(0);
 }
 
+$outfile = $opt_o || 'eqn.png';
+
+# Format to write image in
+if($opt_x) {
+    $out_format = $opt_x;
+} else {
+    $out_format = extract_ext($outfile);
+    if (not defined $out_format) {
+        $out_format = 'png';
+    }
+}
+print "out format: $out_format\n";
 if ($opt_h) {
 print <<'EOT';
 Generate PNG images from LaTeX expressions
@@ -406,7 +431,6 @@ EOT
 	exit(0);
 }
 
-$outfile = $opt_o || 'eqn.png';
 $dpi =  $opt_d || 300;
 
 # determine foreground color
@@ -588,9 +612,10 @@ if($opt_B) {
     unshift @cargs, ('-border', $geom, '-bordercolor', $color);
 }
 unshift @cargs, ("$cmds{'convert'}");
+$dest_img = "${tempdir}/dest_img";
 push @cargs, (
     "${tempdir}/foo.ps",
-    "${tempdir}/foo.png",
+    "${out_format}:${dest_img}",
     );
 # The following system() call seems to be completely successful.
 # However, using the ``system(...) or die "died: $!"'' idiom results
@@ -598,12 +623,12 @@ push @cargs, (
 # never could discern why, so I've left it as is.  If you know why,
 # please let me know (amax@redsymbol.net)
 system(@cargs);
-unless (-e "$tempdir/foo.png") {
+unless (-e $dest_img) {
     print STDERR <<'EOT';
-Sorry, something went wrong.  Final conversion to PNG format has failed.
+Sorry, something went wrong.  Final conversion from postscript format has failed.
 EOT
     exit(2);
 }
 
 # rename final png
-system("cp $tempdir/foo.png $outfile");
+system("cp ${dest_img} $outfile");

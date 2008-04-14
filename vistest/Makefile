@@ -1,5 +1,8 @@
 L2P = ../l2p
 
+try:
+	# -I option
+	$(L2P) -o test_Ioption.jpg -I '\sqrt{\sum^{N}_{i=1}{x_i}}'
 all:
 	# -I option
 	$(L2P) -o test_Ioption.png -I '\sqrt{\sum^{N}_{i=1}{x_i}}'
@@ -43,3 +46,6 @@ all:
 	$(L2P) -o test_borderwithtransparency.png -T -B '50' i.tex
 	# multiple items
 	cat j.tex | $(L2P) -o test_multi.png
+
+clean:
+	rm -f *.png *.jpg *.gif
