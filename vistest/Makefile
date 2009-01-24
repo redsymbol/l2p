@@ -1,9 +1,6 @@
 L2P = ../l2p
 
-try:
-	# -I option
-	$(L2P) -o test_Ioption.jpg -I '\sqrt{\sum^{N}_{i=1}{x_i}}'
-all:
+all_imgs:
 	# -I option
 	$(L2P) -o test_Ioption.png -I '\sqrt{\sum^{N}_{i=1}{x_i}}'
 	# multi-line bug
