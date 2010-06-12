@@ -1,5 +1,12 @@
 L2P = ../l2p
 
+all: all_imgs all_comps
+
+all_comps:
+	for ref in *_ref; do \
+		./are_same_img.sh $${ref} $${ref%_ref}; \
+	done
+
 all_imgs:
 	# -I option
 	$(L2P) -o test_Ioption.png -I '\sqrt{\sum^{N}_{i=1}{x_i}}'
