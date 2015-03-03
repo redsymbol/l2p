@@ -478,7 +478,7 @@ if ($opt_p) {
 # get expression to render
 $pre = join "\n", (
 '\documentclass{article}',
-(map { '\usepackage{' . $_ . '}' } @packages),
+(map { my ($p,$o) = split(/:/, $_); '\usepackage['.($o ? $o : "").']{' . $p. '}' } @packages),
 '\definecolor{bg}{rgb}{', $bg, '}',
 '\definecolor{fg}{rgb}{', $fg, '}',
 '\pagestyle{empty}',
