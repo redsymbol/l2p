@@ -368,6 +368,7 @@ my %cmds = (
     'latex'   => '',
     'dvips'   => '',
     'convert' => '',
+    'mogrify' => '',
     );
 my @cmds_notfound;
 foreach $cmd (keys %cmds) {
@@ -628,6 +629,19 @@ unless (-e $dest_img) {
 Sorry, something went wrong.  Final conversion from postscript format has failed.
 EOT
     exit(2);
+}
+
+if( "${out_format}" eq "png" )
+{
+# put latex code in the metadata of png
+@cargs = ("-comment"
+         , join("\n",($pre,$eqn,$post))
+         , ${dest_img}
+);
+unshift @cargs, ("$cmds{'mogrify'}");
+
+#print join(" ",@cargs);
+system(@cargs);
 }
 
 # rename final png
