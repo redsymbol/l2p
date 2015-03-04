@@ -634,8 +634,15 @@ EOT
 if( "${out_format}" eq "png" )
 {
 # put latex code in the metadata of png
+open($latexfh,"<",$latexfn) or die "could not read from latex temp file";
+# this line creates the comment that will be inserted into the png file.
+# it turns out to be kind of tricky to print a string with latex command because it is full of things that look like special characters.
+# example: \newcommand{\result}[1]{\bf #1}      both \n and \r can be interpolated.
+# so, are going to read the latex from the tmp file so we can get the lines into an array, then we quotemeta each line, and finally joing them with newline chars.
+$comment = join("\n", (map { chomp; quotemeta($_) } <$latexfh>) );
+close($latexfh);
 @cargs = ("-comment"
-         , join("\n",($pre,$eqn,$post))
+         , $comment
          , ${dest_img}
 );
 unshift @cargs, ("$cmds{'mogrify'}");
