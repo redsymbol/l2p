@@ -266,6 +266,7 @@ patches are welcome.
 
 use File::Temp qw/tempfile tempdir/;
 use Getopt::Std;
+use Image::Magick;
 
 # Takes a string and extracts an RGB value from it.
 # Returns ($r,$g,$b), all values between 0 and 1 if parsing is successful,
@@ -345,7 +346,7 @@ sub extract_ext($) {
 }
 
 
-my($pre,$post,$dpi,$eqn,$outfile,$fg,$bg);
+my($pre,$post,$dpi,@eqninput,$eqn,$outfile,$fg,$bg);
 our($opt_o, # output file name
     $opt_d, # dpi
     $opt_i, # in-command-line latex code
@@ -360,15 +361,15 @@ our($opt_o, # output file name
     $opt_p, # additional package(s)
     $opt_V, # print version info
     $opt_B, # border
+    $opt_X, # extract latex code
     $opt_Z, # reserved for hacks
     );
 
 # check to see if needed software is available
 my %cmds = (
-    'latex'   => '',
-    'dvips'   => '',
-    'convert' => '',
-    'mogrify' => '',
+    'latex'    => '',
+    'dvips'    => '',
+    'convert'  => '',
     );
 my @cmds_notfound;
 foreach $cmd (keys %cmds) {
@@ -383,6 +384,7 @@ if(@cmds_notfound) {
 }
 
 # process command line opts
+$cmdline = $0." ".join(" ", @ARGV);
 getopt('odiIfbpBx');
 
 if ($opt_V) {
@@ -426,10 +428,38 @@ Options:
     -F                Input is full LaTeX document, not just fragment
     -V                Show version
     -B 'geom [color]' Pad image with a border
+    -X                Extract (La)TeX code from image file
     -h                Show this help and exit
 Also see the full documentation (try typing 'perldoc l2p').
 EOT
 	exit(0);
+}
+
+if ($opt_X) {
+  print "Extracting (La)TeX code from image file";
+
+  $image = shift @ARGV;
+  if(not -e $image ) {
+      die "image file ($image) does not exist!";
+  } elsif (not -r $image) {
+      die "Cannot read file $image.";
+  }
+  if(substr($image,0,1) ne '/') {
+      my $cwd = `pwd`; chomp $cwd;
+      $image= $cwd . '/' . $image;
+  }
+
+  my $magick = Image::Magick->new();
+  $magick->Read( $image );
+  
+  $comment = $magick->Get( "comment" );
+
+  $latexfn = "$image.latex";
+  open($latexfh,">",$latexfn) or die "could not write to latex file";
+  print $latexfh $comment;
+  close($latexfh);
+
+  exit(0);
 }
 
 $dpi =  $opt_d || 300;
@@ -495,27 +525,24 @@ $post = <<'EOT';
 EOT
 
 # discover the LaTeX expression to render
+@eqninput = ();
 $eqn='';
 if (defined $opt_i) {
     # latex code from command line
-    $eqn =  $opt_i . "\n";
+    push @eqninput, $opt_i;
 } elsif (defined $opt_I) {
     # expression from command line
-    $eqn = sprintf("\$%s\$\n",$opt_I);
+    push @eqninput, sprintf("\$%s\$",$opt_I);
 } elsif (not $opt_F) {
     # file/stdin contains LaTeX expression(s)
     # TODO: rewrite using an expression iterator subroutine
     while(<>) {
-        next if /^\s*#/ or /^\s*$/;
-            chomp; 
-        $eqn .= $_ . "\n";
-        # If this is line contains a single inline expression, add
-        # an extra newline, so that it renders correctly
-        if (/^\s*\$.*\$\s*$/) {
-            $eqn .= "\n";
-        }
+        chomp;
+        push @eqninput,  $_;
+    }
 }
-}
+$eqn = join("\n", @eqninput)."\n";
+
 if (not $opt_F and $eqn =~ /^\s*$/) {
     print STDERR <<'EOT';
 Did not find a LaTeX expression to render.  Perhaps the supplied
@@ -633,22 +660,14 @@ EOT
 
 if( "${out_format}" eq "png" )
 {
-# put latex code in the metadata of png
-open($latexfh,"<",$latexfn) or die "could not read from latex temp file";
-# this line creates the comment that will be inserted into the png file.
-# it turns out to be kind of tricky to print a string with latex command because it is full of things that look like special characters.
-# example: \newcommand{\result}[1]{\bf #1}      both \n and \r can be interpolated.
-# so, are going to read the latex from the tmp file so we can get the lines into an array, then we quotemeta each line, and finally joing them with newline chars.
-$comment = join("\n", (map { chomp; quotemeta($_) } <$latexfh>) );
-close($latexfh);
-@cargs = ("-comment"
-         , $comment
-         , ${dest_img}
-);
-unshift @cargs, ("$cmds{'mogrify'}");
 
-#print join(" ",@cargs);
-system(@cargs);
+  # open the png file and write the latex code into the comments field
+  my $magick = Image::Magick->new();
+  $magick->Read( $dest_img );
+  unshift @eqninput, '" '.$cmdline; # put the command line used to generate the file in the comments
+  $magick->Set( Comment=> join("\n", ( map {quotemeta($_)} @eqninput) )."\n" );
+  $magick->Write( $dest_img );
+
 }
 
 # rename final png
