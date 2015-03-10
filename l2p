@@ -22,7 +22,8 @@ input.
 
 =head1 DESCRIPTION
 
-Convert expressions in LaTeX format into PNGs
+Convert expressions in LaTeX format into PNGs and embeds the LaTeX code
+in the PNG Comment tag.
 
 =head1 EXAMPLES
 
@@ -147,10 +148,12 @@ B<-o output.png>
 Name of output file.  Default is 'eqn.png'.
 
 =item
-B<-p packagename[,packagename2[,...]]]>
+B<-p packagename[:option1[,option2][/packagename2[,...]]]>
 
 Use additional LaTeX/TeX packages.  You can specify several, separated
-by commas.
+by slashes (or periods) and specify an option list for each.
+
+Example: -p siunitx:per-mode=fraction,mode=text/circuitikz
 
 =item
 B<-B "WIDTHxHEIGHT [color]">
@@ -187,9 +190,39 @@ the ImageMagick distribution.  See L<convert(1)>, or
 L<http://imagemagick.org/script/convert.php> for more information.
 
 =item
+B<-E>
+
+Crop the image to tight fit the equation using the -E option for the 'dvips' command. This will
+only work for text, it does not correctly crop the image for graphics. See the -t option
+for graphics.
+
+=item
+B<-t>
+
+Crop the image using the -trim option for the 'convert' command. This should
+work for both equations and graphics, but you will likely want to specify
+a border width using the -B option.
+
+=item
 B<-T>
 
 Create an image with a transparent background.
+
+=item
+B<-X>
+
+Extract the LaTeX code used to create the image from the image comments. Currntly
+only supported for PNG images. LaTeX code is extracted and placed in a file with
+the same name as the image file with '.latex' added on the end.
+
+=item
+B<-P command>
+
+Preview the image with command after it is created.
+
+Example: -P feh
+
+This will open the image with feh.
 
 =item
 B<-V>
@@ -259,8 +292,10 @@ This software is in the public domain.
 
 =head1 AUTHOR
 
-Aaron Maxwell (amax@redsymbol.net).  Comments, feature requests, and
+Original: Aaron Maxwell (amax@redsymbol.net).  Comments, feature requests, and
 patches are welcome.
+
+Latest Commits: CD Clark III.
 
 =cut
 
@@ -355,6 +390,8 @@ our($opt_o, # output file name
     $opt_f, # foreground RGB triplet
     $opt_b, # background RGB triplet
     $opt_F, # set if input is a full LaTeX document
+    $opt_E, # crop image with dvips -E option
+    $opt_t, # trim image with imagemagick -trim
     $opt_T, # transparent background 
     $opt_C, # suppress autocleaning of temp files
     $opt_h, # display help message
@@ -363,6 +400,7 @@ our($opt_o, # output file name
     $opt_B, # border
     $opt_X, # extract latex code
     $opt_Z, # reserved for hacks
+    $opt_P, # preview image after it is generated
     );
 
 # check to see if needed software is available
@@ -370,6 +408,8 @@ my %cmds = (
     'latex'    => '',
     'dvips'    => '',
     'convert'  => '',
+    'mogrify'  => '',
+    'identify' => '',
     );
 my @cmds_notfound;
 foreach $cmd (keys %cmds) {
@@ -385,7 +425,7 @@ if(@cmds_notfound) {
 
 # process command line opts
 $cmdline = $0." ".join(" ", @ARGV);
-getopt('odiIfbpBx');
+getopt('odiIfbpBxP');
 
 if ($opt_V) {
 	print $version, "\n";
@@ -422,6 +462,8 @@ Options:
     -f 'rrggbb'       foreground color
     -b 'rrggbb'       background color
     -d dpi            Conversion resolution (default 300)
+    -E                Crop image with dvips -E option (does not work for graphics)
+    -t                Trim image with convert -trim option (works for graphics)
     -T                Transparent background
     -p pkg[,pkg2...]  use TeX/LaTeX package(s)
     -C                Suppress removal (cleanup) of temporary files
@@ -429,6 +471,7 @@ Options:
     -V                Show version
     -B 'geom [color]' Pad image with a border
     -X                Extract (La)TeX code from image file
+    -P 'command'      Preview image with command after creating
     -h                Show this help and exit
 Also see the full documentation (try typing 'perldoc l2p').
 EOT
@@ -503,7 +546,7 @@ if ($opt_T) {
 
 my @packages = ('color');
 if ($opt_p) {
-	@packages = (@packages, split(/,/, $opt_p));
+	@packages = (@packages, split(/[\.\+\/]/, $opt_p));
 }
 
 # get expression to render
@@ -588,7 +631,7 @@ EOT
 
 # convert dvi to ps
 # the -E option prevents convert from freaking out later
-my $dvipscmd = "$cmds{'dvips'} " . ($opt_F ? "": "-E") . " foo -o 2>/dev/null";
+my $dvipscmd = "$cmds{'dvips'} " . ( $opt_F ? "": ( $opt_E ? "-E" : "" )) . " foo -o 2>/dev/null";
 system("cd $tempdir; $dvipscmd");
 unless (-e "${tempdir}/foo.ps") {
 	print STDERR <<'EOT';
@@ -609,7 +652,7 @@ if($opt_F) { # make image of full latex document
 	'PixelsPerInch',
 	'-density',
 	"$dpi",
-        );
+  );
 }
 if ($opt_T) { # transparent background
     @cargs = (
@@ -639,6 +682,12 @@ if($opt_B) {
     $color = '#' . norm2hex($color);
     unshift @cargs, ('-border', $geom, '-bordercolor', $color);
 }
+# Trim
+if($opt_t) {
+  # we want to trim the picture
+  unshift @cargs, ('-trim');
+}
+
 unshift @cargs, ("$cmds{'convert'}");
 $dest_img = "${tempdir}/dest_img";
 push @cargs, (
@@ -672,3 +721,11 @@ if( "${out_format}" eq "png" )
 
 # rename final png
 system("cp ${dest_img} $outfile");
+
+
+# preview image with the command provided
+if ($opt_P) {
+  $cmd = $opt_P." ".$outfile;
+  system($cmd);
+}
+
