@@ -7,7 +7,7 @@ fragment of LaTeX code, without you needing to build a separate LaTeX
 markup file.  A large set of options provide great control and finesse
 over the resulting image.
 
-The LaTeX code used to generate the image is embedded in the images metadata,
+The LaTeX code used to generate the image is embedded in the image metadata,
 and can be extracted later, which allows the image to be modified in the future
 the future if needed.
 
