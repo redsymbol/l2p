@@ -190,11 +190,12 @@ the ImageMagick distribution.  See L<convert(1)>, or
 L<http://imagemagick.org/script/convert.php> for more information.
 
 =item
-B<-E>
+B<-E 1|0>
 
-Crop the image to tight fit the equation using the -E option for the 'dvips' command. This will
-only work for text, it does not correctly crop the image for graphics. See the -t option
-for graphics.
+Enable or disable cropping the image to tight fit the equation using the -E
+option for the 'dvips' command. This will only work for text, it does not
+correctly crop the image for graphics. By default, this option is enabled, to
+disable it, give -E 0. See the -t option for graphics.
 
 =item
 B<-t>
@@ -485,7 +486,7 @@ Options:
     -f 'rrggbb'       foreground color
     -b 'rrggbb'       background color
     -d dpi            Conversion resolution (default 300)
-    -E 0|1            Enable/disabel cropping image with dvips -E option (does not work for graphics). Enabled by default.
+    -E 1|0            Enable/disabel cropping image with dvips -E option (does not work for graphics). Enabled by default.
     -t                Trim image with convert -trim option (works for graphics)
     -T                Transparent background
     -p pkg[,pkg2...]  use TeX/LaTeX package(s)
