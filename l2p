@@ -301,7 +301,22 @@ Latest Commits: CD Clark III.
 
 use File::Temp qw/tempfile tempdir/;
 use Getopt::Std;
-use Image::Magick;
+
+my $HAVE_PERLMAGICK = eval {
+        require Image::Magick;
+        1;
+};
+if( $HAVE_PERLMAGICK )
+{
+  Image::Magick->import();
+}
+else
+{
+  $PERLMAGICK_MISSING_MSG  = "Embedding/extracting LaTeX code in/from image requires the Image::Magick (PerlMagick) package, which was not found.";
+  $PERLMAGICK_MISSING_MSG .= "\n";
+  $PERLMAGICK_MISSING_MSG .= "Please install it or update your environment so that it can be found if you want to use this feature.";
+  $PERLMAGICK_MISSING_MSG .= "\n";
+}
 
 # Takes a string and extracts an RGB value from it.
 # Returns ($r,$g,$b), all values between 0 and 1 if parsing is successful,
@@ -488,6 +503,11 @@ EOT
 
 if ($opt_X) {
   print "Extracting (La)TeX code from image file";
+
+  if(not $HAVE_PERLMAGICK)
+  {
+    die $PERLMAGICK_MISSING_MSG;
+  }
 
   $image = shift @ARGV;
   if(not -e $image ) {
@@ -715,15 +735,22 @@ EOT
     exit(2);
 }
 
+# add LaTeX to image metadata
 if( "${out_format}" eq "png" )
 {
-
-  # open the png file and write the latex code into the comments field
-  my $magick = Image::Magick->new();
-  $magick->Read( $dest_img );
-  unshift @eqninput, '" '.$cmdline; # put the command line used to generate the file in the comments
-  $magick->Set( Comment=> join("\n", ( map {quotemeta($_)} @eqninput) )."\n" );
-  $magick->Write( $dest_img );
+  if( not ${HAVE_PERLMAGICK} )
+  {
+    print $PERLMAGICK_MISSING_MSG;
+  }
+  else
+  {
+    # open the png file and write the latex code into the comments field
+    my $magick = Image::Magick->new();
+    $magick->Read( $dest_img );
+    unshift @eqninput, '" '.$cmdline; # put the command line used to generate the file in the comments
+    $magick->Set( Comment=> join("\n", ( map {quotemeta($_)} @eqninput) )."\n" );
+    $magick->Write( $dest_img );
+  }
 
 }
 
