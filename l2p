@@ -425,7 +425,15 @@ if(@cmds_notfound) {
 
 # process command line opts
 $cmdline = $0." ".join(" ", @ARGV);
-getopt('odiIfbpBxP');
+$opt_E = 1;  # enable -E cropping by default
+getopt('odiIfbpBxPE');
+
+# if -trim cropping is enabled, turn off -E cropping.
+if( $opt_t )
+{
+  $opt_E = 0;
+  print $opt_E;
+}
 
 if ($opt_V) {
 	print $version, "\n";
@@ -462,7 +470,7 @@ Options:
     -f 'rrggbb'       foreground color
     -b 'rrggbb'       background color
     -d dpi            Conversion resolution (default 300)
-    -E                Crop image with dvips -E option (does not work for graphics)
+    -E 0|1            Enable/disabel cropping image with dvips -E option (does not work for graphics). Enabled by default.
     -t                Trim image with convert -trim option (works for graphics)
     -T                Transparent background
     -p pkg[,pkg2...]  use TeX/LaTeX package(s)
