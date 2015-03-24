@@ -301,6 +301,7 @@ Latest Commits: CD Clark III.
 =cut
 
 use File::Temp qw/tempfile tempdir/;
+use File::Basename;
 use Getopt::Std;
 
 my $HAVE_PERLMAGICK = eval {
@@ -440,7 +441,7 @@ if(@cmds_notfound) {
 }
 
 # process command line opts
-$cmdline = $0." ".join(" ", @ARGV);
+$cmdline = basename($0)." ".join(" ", @ARGV);
 $opt_E = 1;  # enable -E cropping by default
 getopt('odiIfbpBxPE');
 
@@ -448,7 +449,6 @@ getopt('odiIfbpBxPE');
 if( $opt_t )
 {
   $opt_E = 0;
-  print $opt_E;
 }
 
 if ($opt_V) {
@@ -748,7 +748,7 @@ if( "${out_format}" eq "png" )
     # open the png file and write the latex code into the comments field
     my $magick = Image::Magick->new();
     $magick->Read( $dest_img );
-    unshift @eqninput, '" '.$cmdline; # put the command line used to generate the file in the comments
+    unshift @eqninput, '%CMD: '.$cmdline; # put the command line used to generate the file in the comments
     $magick->Set( Comment=> join("\n", ( map {quotemeta($_)} @eqninput) )."\n" );
     $magick->Write( $dest_img );
   }
