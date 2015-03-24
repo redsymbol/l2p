@@ -1,3 +1,5 @@
+DESTDIR=$(HOME)/bin
+
 latest:
 	./mklatest
 clean:
@@ -9,3 +11,6 @@ doc:
 	pod2txt l2p doc/l2p.txt
 test:
 	cd vistest; make
+install:
+	install -m 0755 l2p $(DESTDIR)
+
