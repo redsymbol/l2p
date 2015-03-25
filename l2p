@@ -3,303 +3,6 @@
 
 $version = '1.1.1';
 
-=head1 NAME
-
-l2p - create PNG images from LaTeX expressions
-
-=head1 SYNOPSIS
-
-B<l2p> [options...] -I 'I<latex math expression>'
-
-or
-
-B<l2p> [options...] [I<expression_file>]
-
-I<expression_file> contains an expression or expressions in (La)TeX
-format - one per line.  If neither I<expression_file>, nor the B<-I>
-or B<-i> options are given, the expression is read from standard
-input.
-
-=head1 DESCRIPTION
-
-Convert expressions in LaTeX format into PNGs and embeds the LaTeX code
-in the PNG Comment tag.
-
-=head1 EXAMPLES
-
-=over
-
-=item
-
-l2p -I '4x^2-7=\cos{2 \pi x}' -o 'eqn4.png'
-
-Produce a PNG image, named 'eqn4.png', of the equation described by the
-LaTeX expression '$4x^2 - 7 = \cos{2 \pi x}$'.
-
-=item
-
-l2p -i '$4x^2-7=\cos{2 \pi x}$' -o 'eqn4.png'
-
-Same as previous, except that the latex code argument is not
-automatically rendered as an equation - we must explicity surround it
-with '$' symbols.  By omitting that, you can also render
-images of non-math or mixed expressions.
-
-=item
-
-l2p -o big_equation.png big_hairy_equation
-
-Produce a PNG image, called big_equation.png, from the LaTeX expression
-contained in the file big_hairy_equation (specifically, it contains
-'$x=2$'.) Note that this file is NOT a full LaTeX document - use the
-B<-F> option for that.
-
-=item
-
-l2p -d 250 -I '\nabla \cdot \mathbf{D} = \rho'
-
-Produce a PNG image from the LaTeX code given with the B<-I> argument
-(which happens to be one of Maxwell's equations), at 250 dots per inch.
-Since we did not specify an output file name with the B<-o> option, the
-image will be 'eqn.png' (the default).  
-
-=item
-
-l2p -p amssymb -I '\mho' -o mho.png
-
-Produce a PNG image of the Mho symbol (an upside-down capital omega),
-saving the image in the file 'mho.png'.  We include the amssymb package,
-which defines that symbol.
-
-=item
-
-l2p -B 20x30 -I '\sum_{n=0}^{\infty}\frac{(-\phi^2)^n}{(2n)!}' -o cosine.png
-
-Produce an image of the indicated infinite summation, padded with a
-border that is 20 pixels on each side horizontally, and 30 pixels each
-side vertically.  The color of this border region will be the same as
-the rest of the image background.
-
-=back
-
-=head1 OPTIONS
-
-Many options have arguments that may contain characters, like '#' or
-spaces, that the shell considers special.  Be sure to surround all
-such arguments with single or double quotes, so that the shell
-understands what is meant.  (If unsure, it's always safe to use the
-quotes.)
-
-=over
-
-=item
-B<-I "math expression">
-
-Argument is an equation/expression in (La)TeX format, interpreted in
-math mode.  In most cases, you will want to enclose the argument in
-quotes to protect it from shell expansion.
-
-=item
-B<-i "latex code">
-
-Argument is a snippet of (La)TeX code.  If it is a math expression, be
-sure to surround it with $ symbols: for example, B<-i> "$x+2$".  In
-most cases, you will want to enclose the argument in quotes to protect
-it from shell expansion.
-
-The only difference between the B<-i> and B<-I> options is that B<-I>
-automatically surrounds its argument with "$" symbols, so that it is
-rendered in LaTeX's math mode.  Otherwise there is no difference.
-
-=item
-B<-b "rrggbb">
-
-Background color.  There are several ways to specify the color.  See the
-section L</COLORS>, below, for details.
-
-=item 
-B<-d dpi>
-
-Pixel density at which the equation is rendered, in dots per inch
-(default 300).  
-
-An image with a DPI of 600 will have twice as many pixels in each of the
-x and y directions than an image with a DPI of 300.  The effect is
-different in the normal context of printing, where a higher DPI will
-leave the text with the same physical size, but with a finer resolution.
-This is because the physical size of a pixel is not really variable; so
-to have double the resolution, a symbol in an image must be double the
-size.
-
-=item 
-B<-f "rrggbb">
-
-Foreground color.  There are several ways to specify the color.  See the
-section L</COLORS>, below, for details.
-
-=item
-B<-h>
-
-Show a help summary.
-
-=item 
-B<-o output.png>
-
-Name of output file.  Default is 'eqn.png'.
-
-=item
-B<-p packagename[:option1[,option2][/packagename2[,...]]]>
-
-Use additional LaTeX/TeX packages.  You can specify several, separated
-by slashes (or periods) and specify an option list for each.
-
-Example: -p siunitx:per-mode=fraction,mode=text/circuitikz
-
-=item
-B<-B "WIDTHxHEIGHT [color]">
-
-or: B<-B "SIZE [color]">
-
-Pad the resulting image with a border of the indicated size, in pixels. 
-
-You can optionally specify a color for the border region.  By default,
-the border will be the same color as the rest of the background. (See
-L</COLORS> below for the format.)
-
-=item
-B<-C>
-
-Suppress automatic removal (cleanup) of temporary files.  This will be
-useful if something goes wrong, or if you want to use the intermediate
-DVI or Postscript renditions.  B<l2p> will tell you which directory
-contains these files.
-
-=item
-B<-F>
-
-Supplied expression is a full LaTeX document, rather than just an
-expression fragment. Negates the B<-f>, B<-b>, B<-p>, B<-B> and B<-T>
-options.
-
-B<Note>:  B<l2p> currently only converts full LaTeX documents
-that are relatively simple: only one page in length, and with no external
-dependencies (such as included graphics).  If you need to convert a more
-complex document, you can generate a DVI file with latex like normal,
-then convert the DVI into a series of PNG images using B<convert> from
-the ImageMagick distribution.  See L<convert(1)>, or
-L<http://imagemagick.org/script/convert.php> for more information.
-
-=item
-B<-E 1|0>
-
-Enable or disable cropping the image to tight fit the equation using the -E
-option for the 'dvips' command. This will only work for text, it does not
-correctly crop the image for graphics. By default, this option is enabled, to
-disable it, give -E 0. See the -t option for graphics.
-
-=item
-B<-t>
-
-Crop the image using the -trim option for the 'convert' command. This should
-work for both equations and graphics, but you will likely want to specify
-a border width using the -B option.
-
-=item
-B<-T>
-
-Create an image with a transparent background.
-
-=item
-B<-X>
-
-Extract the LaTeX code used to create the image from the image comments. Currntly
-only supported for PNG images. LaTeX code is extracted and placed in a file with
-the same name as the image file with '.latex' added on the end.
-
-=item
-B<-P command>
-
-Preview the image with command after it is created.
-
-Example: -P feh
-
-This will open the image with feh.
-
-=item
-B<-V>
-
-Show version information.
-
-=back
-
-=head1 COLORS
-
-Some options, such as B<-b> and B<-f>, take an argument specifying a
-color in RGB format.  B<l2p> will decipher most representations, such
-as:
-
-=over
-
-=item
-
-A hexidecimal triplet.  For example, '-f "FF0000" -b "#ffffff"' gives a
-red foreground on a white background.  Case is not important, and the
-"#" is optional.
-
-=item
-
-Three decimal whole numbers, in the range of 0 to 255.  These must be
-separated by spaces or punctuation (comma, semicolon or colon).  For
-example, '-b "0 127 255" -f "0,0,0"' is black on a nice bluish
-background.
-
-=item
-
-Three fractions between 0 and 1, inclusive.  At least one of the three
-numbers must contain a decimal point (to distinguish this format from
-the others), and they are separated by space or punctuation.  For
-example, "0.87 .78 .41" is the same as the hex triplet "DEC769", and "0,
-1.0, 0" is the color green.  (Remember that decimal point.  "0, 1, 0"
-will give you a nearly black color.)
-
-=back
-
-Note that you may need to put single or double quotes around the color
-string, to ensure the shell interprets it correctly.
-
-=head1 BUGS
-
-Error handling is imperfect.  Among other things, If a needed 
-LaTeX package is not included, B<l2p> will silently produce a
-broken image.
-
-On certain platforms, images produced with the B<-T> option (transparent
-background) may leave pixels at the edges of symbols a mixture of the
-text color and some background color.  This may not look good if the
-resulting image is put on a differently colored background.  A
-workaround is to give a background color hint with the B<-b> option;
-the edge pixels will then be a mixture of specified foreground and
-background colors.
-
-=head1 ACKS
-
-Thanks to Jesse Merriman (L<http://www.jessemerriman.com/>) for
-providing a patch that improved transparent background support.
-Integrated in version 1.1.
-
-=head1 COPYRIGHT
-
-This software is in the public domain.
-
-=head1 AUTHOR
-
-Original: Aaron Maxwell (amax@redsymbol.net).  Comments, feature requests, and
-patches are welcome.
-
-Latest Commits: CD Clark III.
-
-=cut
-
 use File::Temp qw/tempfile tempdir/;
 use File::Basename;
 use Getopt::Std;
@@ -765,4 +468,301 @@ if ($opt_P) {
   $cmd = $opt_P." ".$outfile;
   system($cmd);
 }
+
+=head1 NAME
+
+l2p - create PNG images from LaTeX expressions
+
+=head1 SYNOPSIS
+
+B<l2p> [options...] -I 'I<latex math expression>'
+
+or
+
+B<l2p> [options...] [I<expression_file>]
+
+I<expression_file> contains an expression or expressions in (La)TeX
+format - one per line.  If neither I<expression_file>, nor the B<-I>
+or B<-i> options are given, the expression is read from standard
+input.
+
+=head1 DESCRIPTION
+
+Convert expressions in LaTeX format into PNGs and embeds the LaTeX code
+in the PNG Comment tag.
+
+=head1 EXAMPLES
+
+=over
+
+=item
+
+l2p -I '4x^2-7=\cos{2 \pi x}' -o 'eqn4.png'
+
+Produce a PNG image, named 'eqn4.png', of the equation described by the
+LaTeX expression '$4x^2 - 7 = \cos{2 \pi x}$'.
+
+=item
+
+l2p -i '$4x^2-7=\cos{2 \pi x}$' -o 'eqn4.png'
+
+Same as previous, except that the latex code argument is not
+automatically rendered as an equation - we must explicity surround it
+with '$' symbols.  By omitting that, you can also render
+images of non-math or mixed expressions.
+
+=item
+
+l2p -o big_equation.png big_hairy_equation
+
+Produce a PNG image, called big_equation.png, from the LaTeX expression
+contained in the file big_hairy_equation (specifically, it contains
+'$x=2$'.) Note that this file is NOT a full LaTeX document - use the
+B<-F> option for that.
+
+=item
+
+l2p -d 250 -I '\nabla \cdot \mathbf{D} = \rho'
+
+Produce a PNG image from the LaTeX code given with the B<-I> argument
+(which happens to be one of Maxwell's equations), at 250 dots per inch.
+Since we did not specify an output file name with the B<-o> option, the
+image will be 'eqn.png' (the default).  
+
+=item
+
+l2p -p amssymb -I '\mho' -o mho.png
+
+Produce a PNG image of the Mho symbol (an upside-down capital omega),
+saving the image in the file 'mho.png'.  We include the amssymb package,
+which defines that symbol.
+
+=item
+
+l2p -B 20x30 -I '\sum_{n=0}^{\infty}\frac{(-\phi^2)^n}{(2n)!}' -o cosine.png
+
+Produce an image of the indicated infinite summation, padded with a
+border that is 20 pixels on each side horizontally, and 30 pixels each
+side vertically.  The color of this border region will be the same as
+the rest of the image background.
+
+=back
+
+=head1 OPTIONS
+
+Many options have arguments that may contain characters, like '#' or
+spaces, that the shell considers special.  Be sure to surround all
+such arguments with single or double quotes, so that the shell
+understands what is meant.  (If unsure, it's always safe to use the
+quotes.)
+
+=over
+
+=item
+B<-I "math expression">
+
+Argument is an equation/expression in (La)TeX format, interpreted in
+math mode.  In most cases, you will want to enclose the argument in
+quotes to protect it from shell expansion.
+
+=item
+B<-i "latex code">
+
+Argument is a snippet of (La)TeX code.  If it is a math expression, be
+sure to surround it with $ symbols: for example, B<-i> "$x+2$".  In
+most cases, you will want to enclose the argument in quotes to protect
+it from shell expansion.
+
+The only difference between the B<-i> and B<-I> options is that B<-I>
+automatically surrounds its argument with "$" symbols, so that it is
+rendered in LaTeX's math mode.  Otherwise there is no difference.
+
+=item
+B<-b "rrggbb">
+
+Background color.  There are several ways to specify the color.  See the
+section L</COLORS>, below, for details.
+
+=item 
+B<-d dpi>
+
+Pixel density at which the equation is rendered, in dots per inch
+(default 300).  
+
+An image with a DPI of 600 will have twice as many pixels in each of the
+x and y directions than an image with a DPI of 300.  The effect is
+different in the normal context of printing, where a higher DPI will
+leave the text with the same physical size, but with a finer resolution.
+This is because the physical size of a pixel is not really variable; so
+to have double the resolution, a symbol in an image must be double the
+size.
+
+=item 
+B<-f "rrggbb">
+
+Foreground color.  There are several ways to specify the color.  See the
+section L</COLORS>, below, for details.
+
+=item
+B<-h>
+
+Show a help summary.
+
+=item 
+B<-o output.png>
+
+Name of output file.  Default is 'eqn.png'.
+
+=item
+B<-p packagename[:option1[,option2][/packagename2[,...]]]>
+
+Use additional LaTeX/TeX packages.  You can specify several, separated
+by slashes (or periods) and specify an option list for each.
+
+Example: -p siunitx:per-mode=fraction,mode=text/circuitikz
+
+=item
+B<-B "WIDTHxHEIGHT [color]">
+
+or: B<-B "SIZE [color]">
+
+Pad the resulting image with a border of the indicated size, in pixels. 
+
+You can optionally specify a color for the border region.  By default,
+the border will be the same color as the rest of the background. (See
+L</COLORS> below for the format.)
+
+=item
+B<-C>
+
+Suppress automatic removal (cleanup) of temporary files.  This will be
+useful if something goes wrong, or if you want to use the intermediate
+DVI or Postscript renditions.  B<l2p> will tell you which directory
+contains these files.
+
+=item
+B<-F>
+
+Supplied expression is a full LaTeX document, rather than just an
+expression fragment. Negates the B<-f>, B<-b>, B<-p>, B<-B> and B<-T>
+options.
+
+B<Note>:  B<l2p> currently only converts full LaTeX documents
+that are relatively simple: only one page in length, and with no external
+dependencies (such as included graphics).  If you need to convert a more
+complex document, you can generate a DVI file with latex like normal,
+then convert the DVI into a series of PNG images using B<convert> from
+the ImageMagick distribution.  See L<convert(1)>, or
+L<http://imagemagick.org/script/convert.php> for more information.
+
+=item
+B<-E 1|0>
+
+Enable or disable cropping the image to tight fit the equation using the -E
+option for the 'dvips' command. This will only work for text, it does not
+correctly crop the image for graphics. By default, this option is enabled, to
+disable it, give -E 0. See the -t option for graphics.
+
+=item
+B<-t>
+
+Crop the image using the -trim option for the 'convert' command. This should
+work for both equations and graphics, but you will likely want to specify
+a border width using the -B option.
+
+=item
+B<-T>
+
+Create an image with a transparent background.
+
+=item
+B<-X>
+
+Extract the LaTeX code used to create the image from the image comments. Currntly
+only supported for PNG images. LaTeX code is extracted and placed in a file with
+the same name as the image file with '.latex' added on the end.
+
+=item
+B<-P command>
+
+Preview the image with command after it is created.
+
+Example: -P feh
+
+This will open the image with feh.
+
+=item
+B<-V>
+
+Show version information.
+
+=back
+
+=head1 COLORS
+
+Some options, such as B<-b> and B<-f>, take an argument specifying a
+color in RGB format.  B<l2p> will decipher most representations, such
+as:
+
+=over
+
+=item
+
+A hexidecimal triplet.  For example, '-f "FF0000" -b "#ffffff"' gives a
+red foreground on a white background.  Case is not important, and the
+"#" is optional.
+
+=item
+
+Three decimal whole numbers, in the range of 0 to 255.  These must be
+separated by spaces or punctuation (comma, semicolon or colon).  For
+example, '-b "0 127 255" -f "0,0,0"' is black on a nice bluish
+background.
+
+=item
+
+Three fractions between 0 and 1, inclusive.  At least one of the three
+numbers must contain a decimal point (to distinguish this format from
+the others), and they are separated by space or punctuation.  For
+example, "0.87 .78 .41" is the same as the hex triplet "DEC769", and "0,
+1.0, 0" is the color green.  (Remember that decimal point.  "0, 1, 0"
+will give you a nearly black color.)
+
+=back
+
+Note that you may need to put single or double quotes around the color
+string, to ensure the shell interprets it correctly.
+
+=head1 BUGS
+
+Error handling is imperfect.  Among other things, If a needed 
+LaTeX package is not included, B<l2p> will silently produce a
+broken image.
+
+On certain platforms, images produced with the B<-T> option (transparent
+background) may leave pixels at the edges of symbols a mixture of the
+text color and some background color.  This may not look good if the
+resulting image is put on a differently colored background.  A
+workaround is to give a background color hint with the B<-b> option;
+the edge pixels will then be a mixture of specified foreground and
+background colors.
+
+=head1 ACKS
+
+Thanks to Jesse Merriman (L<http://www.jessemerriman.com/>) for
+providing a patch that improved transparent background support.
+Integrated in version 1.1.
+
+=head1 COPYRIGHT
+
+This software is in the public domain.
+
+=head1 AUTHOR
+
+Original: Aaron Maxwell (amax@redsymbol.net).  Comments, feature requests, and
+patches are welcome.
+
+Latest Commits: CD Clark III.
+
+=cut
 
