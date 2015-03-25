@@ -229,11 +229,11 @@ if ($opt_X) {
   
   $comment = $magick->Get( "comment" );
 
-  $latexfn = "$image.latex";
-  #open($latexfh,">",$latexfn) or die "could not write to latex file";
-  #print $latexfh $comment;
-  #close($latexfh);
-  print $comment;
+  $latexfn = $opt_o || "/dev/stdout";  #$image.latex";
+  open($latexfh,">",$latexfn) or die "could not write to latex file";
+  print $latexfh $comment;
+  close($latexfh);
+  #print $comment;
 
   exit(0);
 }
