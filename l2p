@@ -293,10 +293,10 @@ $pre = join "\n", (
 '\begin{center}',
 "");
 
-$post = <<'EOT';
-\end{center}
-\end{document}
-EOT
+$post = join "\n", (
+'\end{center}',
+'\end{document}',
+"");
 
 # discover the LaTeX expression to render
 @eqninput = ();
@@ -312,7 +312,7 @@ if (defined $opt_i) {
     # TODO: rewrite using an expression iterator subroutine
     while(<>) {
         chomp;
-        push @eqninput,  $_;
+        push @eqninput,  $_ unless( /^\s*#/ ); # skip comments
     }
 }
 $eqn = join("\n", @eqninput)."\n";
