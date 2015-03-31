@@ -128,8 +128,6 @@ my %cmds = (
     'latex'    => '',
     'dvips'    => '',
     'convert'  => '',
-    'mogrify'  => '',
-    'identify' => '',
     );
 my @cmds_notfound;
 foreach $cmd (keys %cmds) {
