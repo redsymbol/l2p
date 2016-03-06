@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # L2P - Convert LaTeX expressions to PNG
 
-$version = '1.1.1';
+$version = 'Unknown';
 
 use File::Temp qw/tempfile tempdir/;
 use File::Basename;
@@ -102,7 +102,8 @@ sub extract_ext($) {
 
 
 my($pre,$post,$dpi,@eqninput,$eqn,$outfile,$fg,$bg);
-our($opt_o, # output file name
+our($opt_a, # auto mode
+    $opt_o, # output file name
     $opt_d, # dpi
     $opt_i, # in-command-line latex code
     $opt_x, # file type extension
@@ -145,6 +146,21 @@ if(@cmds_notfound) {
 $cmdline = basename($0)." ".join(" ", @ARGV);
 $opt_E = 1;  # enable -E cropping by default
 getopt('odiIfbpBxPE');
+
+if( $opt_a )
+{
+  $inputfn = shift @ARGV;
+  open($inputfh,"<",$inputfn) or die "Could not open input file ($inputfn).\n";
+  while($_ = <$inputfh>)
+  {
+    if( s/^\s*%\s*CMD: // )
+    {
+      system( $_ );
+    }
+  }
+  close $inputfh;
+  exit(0);
+}
 
 # if -trim cropping is enabled, turn off -E cropping.
 if( $opt_t )
@@ -458,6 +474,7 @@ if( "${out_format}" eq "png" )
 }
 
 # rename final png
+
 system("cp ${dest_img} $outfile");
 
 
