@@ -7,6 +7,10 @@ fragment of LaTeX code, without you needing to build a separate LaTeX
 markup file.  A large set of options provide great control and finesse
 over the resulting image.
 
+The LaTeX code used to generate the image is embedded in the image metadata,
+and can be extracted later, which allows the image to be modified in the future
+the future if needed.
+
 EXAMPLES
 
 l2p -i '$4x^2-7=\cos{2 \pi x}$' -o eqn4.png
@@ -36,6 +40,13 @@ Produce an image of the indicated infinite summation, padded with a
 border that is 20 pixels on each side horizontally, and 30 pixels each
 side vertically.  The color of this border region will be the same as
 the rest of the image background.
+
+l2p -X cosine.png
+
+Extract the LaTeX code used to produce the cosine.png image. LaTeX code is
+stored in the 'Comment' tag of a png file. The -X option reads the comment tag
+and writes it to a file named after the image file with a .latex extension. So,
+the above command would create a file named cosine.png.latex.
 
 Homepage: http://redsymbol.net/software/l2p/
 Public source repository: http://github.com/redsymbol/l2p/tree/master
